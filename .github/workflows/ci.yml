@@ -1,42 +1,59 @@
 name: CI Workflow
 
-# 1. When should this workflow run?
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-# 2. What jobs should it run?
 jobs:
   build-and-test:
     name: Build, Lint, and Test
     runs-on: ubuntu-latest
 
+    # Spin up a Postgres container for the duration of this job
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: booksdb_test
+        ports:
+          - 5432:5432
+        # Wait until Postgres is actually ready before running steps
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      # Step A: Get the code from the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step B: Set up Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.18.0' # You can change this to match your Node version
-          cache: 'npm'       # Speeds up installation by caching dependencies
+          node-version: '22.18.0'
+          cache: 'npm'
 
-      # Step C: Install dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # Step D: Run Linter
       - name: Run Linter
         run: npm run lint
 
-      # Step E: Run TypeScript type check / Build
       - name: Type Check & Build
         run: npm run build
 
-      # Step F: Run Tests
       - name: Run Unit Tests
         run: npm run test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: admin
+          DB_PASSWORD: admin
+          DB_NAME: booksdb_test
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN: 1d
