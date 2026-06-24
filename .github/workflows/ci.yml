@@ -1,0 +1,42 @@
+name: CI Workflow
+
+# 1. When should this workflow run?
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. What jobs should it run?
+jobs:
+  build-and-test:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step A: Get the code from the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step B: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # You can change this to match your Node version
+          cache: 'npm'       # Speeds up installation by caching dependencies
+
+      # Step C: Install dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step D: Run Linter
+      - name: Run Linter
+        run: npm run lint
+
+      # Step E: Run TypeScript type check / Build
+      - name: Type Check & Build
+        run: npm run build
+
+      # Step F: Run Tests
+      - name: Run Unit Tests
+        run: npm run test
