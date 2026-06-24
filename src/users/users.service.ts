@@ -22,7 +22,7 @@ export class UserService{
         const user = this.usersRepository.create({email: dto.email, password: hash});
         const saved = await this.usersRepository.save(user);
 
-        const {password, ...result} = saved;
+        const {password: _, ...result} = saved;
         return result;
     }
 
