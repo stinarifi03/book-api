@@ -22,6 +22,7 @@ export class UserService{
         const user = this.usersRepository.create({email: dto.email, password: hash});
         const saved = await this.usersRepository.save(user);
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const {password: _, ...result} = saved;
         return result;
     }
