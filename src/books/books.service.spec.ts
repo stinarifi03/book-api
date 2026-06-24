@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Book } from './book.entity';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Role } from '../auth/role.enum';
+import { Users } from '../users/user.entity';
 
 // A mock repository — we don't want to hit a real DB in unit tests
 const mockRepository = {
@@ -54,21 +55,35 @@ describe('BooksService', () => {
   });
 
   describe('create', () => {
-    it('should create and return a book', async () => {
-      const dto = { title: 'Clean Code', author: 'Robert Martin' };
-      const owner = { id: 1, email: 'test@test.com' } as any;
-      const mockBook = { id: 1, ...dto, owner };
+  it('should create and return a book', async () => {
+    const dto = { title: 'Clean Code', author: 'Robert Martin' };
+    const owner: Users = { 
+      id: 1, 
+      email: 'test@test.com',
+      password: 'hashed',
+      role: Role.User,
+      books: [],
+    };
+    const mockBook: Book = { 
+      id: 1, 
+      title: dto.title,
+      author: dto.author,
+      description: '',
+      published: false,
+      createdAt: new Date(),
+      owner,
+    };
 
-      mockRepository.create.mockReturnValue(mockBook);
-      mockRepository.save.mockResolvedValue(mockBook);
+    mockRepository.create.mockReturnValue(mockBook);
+    mockRepository.save.mockResolvedValue(mockBook);
 
-      const result = await service.create(dto, owner);
+    const result = await service.create(dto, owner);
 
-      expect(result).toEqual(mockBook);
-      expect(mockRepository.create).toHaveBeenCalledWith({ ...dto, owner });
-      expect(mockRepository.save).toHaveBeenCalledWith(mockBook);
-    });
+    expect(result).toEqual(mockBook);
+    expect(mockRepository.create).toHaveBeenCalledWith({ ...dto, owner });
+    expect(mockRepository.save).toHaveBeenCalledWith(mockBook);
   });
+});
 
   describe('remove', () => {
     it('should allow owner to delete their book', async () => {
