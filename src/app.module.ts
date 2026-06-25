@@ -18,7 +18,10 @@ import { AuthModule } from './auth/auth.module';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: config.get('NODE_ENV') !== 'production', // only in dev
+        ssl: config.get('NODE_ENV') === 'production'
+          ? { rejectUnauthorized: false }  // Railway Postgres requires SSL
+          : false,
       }),
       inject: [ConfigService],
     }),

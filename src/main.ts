@@ -7,7 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // Next.js dev server
+    origin: [ 
+    'http://localhost:3000', // Next.js dev server
+    'https://books-frontend-pi.vercel.app'
+  ],
     credentials: true,               // allow cookies to be sent
   });
   
